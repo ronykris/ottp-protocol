@@ -1,6 +1,6 @@
 {
-    fromFCID: <fromFCID>,
-    toFCID?: <toFCID>,
+    fromFID: <fromFID>,
+    toFID?: <toFID>,
     fromOTTPID?: <fromOTTPID>,
     toOTTPID?: <toOTTPID>,
     type?: <type>,
