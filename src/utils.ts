@@ -2,12 +2,11 @@ import { join } from 'path'
 import satori  from 'satori'
 import sharp from 'sharp'
 import * as fs from "fs";
-/*
-const html = (...args) =>
-  import('satori-html').then(({ html }) => html(...args));
-*/
-const getHtmlElement = async(text: string) => {    
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import AttestData from './interface';
+import { Wallet, ethers } from 'ethers'
 
+const getHtmlElement = async(text: string) => {    
     try {
         const { html } = await import('satori-html')
         const htmlElement = html`<style>
@@ -79,4 +78,13 @@ export const toPng = async (text: string) => {
     const imageData = 'data:image/png;base64,'+ pngBuffer.toString('base64')
     console.log(imageData)
     return imageData
+}
+
+const onchainAttestation = async (attestObj: AttestData) => {
+    const easContractAddress = process.env.EASCONTRACTADDRESS
+    const schemaUID = process.env.SCHEMAUID
+    const eas = new EAS(easContractAddress!)
+    const provider = new ethers.JsonRpcProvider('https://sepolia.base.org')
+    const signer = new ethers.Wallet(process.env.PVTKEY, provider)
+    await eas.connect(signer);
 }
