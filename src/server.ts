@@ -3,6 +3,8 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import { toPng } from './utils'
+import AttestData from './interface'
+import onchainAttestation from './utils'
 
 dotenv.config()
 
@@ -43,6 +45,13 @@ app.post('/attest', async (req, res) => {
     console.log(req.method)    
     const body: FrameRequest = await req.body
     console.log(body.untrustedData.inputText)
+    let attestDataObj: AttestData = {
+        fromFID: body.untrustedData.fid as unknown as string,
+        toFID: await getToFid(body.untrustedData.inputText),
+        message: body.untrustedData.inputText
+    }
+
+    
     
     res.status(200).send(
         getFrameHtmlResponse({

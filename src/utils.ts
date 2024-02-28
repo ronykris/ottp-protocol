@@ -81,10 +81,36 @@ export const toPng = async (text: string) => {
 }
 
 const onchainAttestation = async (attestObj: AttestData) => {
-    const easContractAddress = process.env.EASCONTRACTADDRESS
-    const schemaUID = process.env.SCHEMAUID
+    const easContractAddress = process.env.EASCONTRACTADDRESS as string
+    const schemaUID = process.env.SCHEMAUID as string
     const eas = new EAS(easContractAddress!)
     const provider = new ethers.JsonRpcProvider('https://sepolia.base.org')
-    const signer = new ethers.Wallet(process.env.PVTKEY, provider)
-    await eas.connect(signer);
+    const signer = new ethers.Wallet(process.env.PVTKEY as string, provider)
+    eas.connect(signer)
+
+    const schemaEncoder = new SchemaEncoder("string fromFID,string[] toFID,string message,string fromOTTPID,string[] toOTTPID,string type,string project");
+    const encodedData = schemaEncoder.encodeData([
+	    { name: "fromFID", value: attestObj.fromFID, type: "string" },
+	    { name: "toFID", value: attestObj.toFID!, type: "string[]" },
+	    { name: "message", value: attestObj.message, type: "string" },
+	    { name: "fromOTTPID", value: attestObj.fromOTTPID!, type: "string" },
+	    { name: "toOTTPID", value: attestObj.toOTTPID!, type: "string[]" },
+	    { name: "type", value: attestObj.type!, type: "string" },
+	    { name: "project", value: attestObj.project!, type: "string" }
+    ])
+
+    const tx = await eas.attest({
+        schema: schemaUID,
+        data: {
+            recipient: "0x0000000000000000000000000000000000000000",            
+            revocable: false, // Be aware that if your schema is not revocable, this MUST be false
+            data: encodedData,
+        },
+    });
+    const newAttestationUID = await tx.wait();
+    console.log("New attestation UID:", newAttestationUID)
+    return newAttestationUID
+
 }
+
+export default onchainAttestation
