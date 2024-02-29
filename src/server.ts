@@ -16,7 +16,7 @@ let fids: string[] = []
 
 app.get('/', (req, res) => {    
     if (req.method !== 'GET') {
-        throw new Error ('Error: `${req.method}` is not supported')
+        throw new Error ('Error: ' + req.method + 'is not supported')
     }  
     res.status(200).send(
     getFrameHtmlResponse({
@@ -80,17 +80,23 @@ app.post('/attest', async (req, res) => {
         getFrameHtmlResponse({
             buttons: [
                 {
-                    "label": "Share...",
-                    "action": "post"
+                    "label": "Share",
+                    "action": "link",
+                    "target": ""
                 },
                 {
-                    "label": "Share...",
-                    "action": "post"
+                    "label": "Go to /ottp",
+                    "action": "link",
+                    "target": ""
+                },
+                {
+                    "label": "View Attestation",
+                    "action": "link",
+                    "target": ""
                 }
             ],
             image: await toPng(body.untrustedData.inputText),
-            ogTitle: "OTTP: Shoutout!",
-            postUrl: process.env.HOST+'/attest', 
+            ogTitle: "OTTP: Shoutout!",            
         })
     )
 

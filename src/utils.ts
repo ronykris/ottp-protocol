@@ -3,10 +3,9 @@ import satori  from 'satori'
 import sharp from 'sharp'
 import * as fs from "fs";
 import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
-import AttestData from './interface';
+import {AttestData} from './interface';
 import { Wallet, ethers } from 'ethers'
 import axios from 'axios'
-import e from 'express';
 
 const getHtmlElement = async(text: string) => {    
     try {
@@ -124,7 +123,6 @@ const getFidFromFname = async (fname: string): Promise<string> => {
     } catch (err) {
         throw(err)
     }
-    
 }
 
 const getFnamesFromFrame = (text: string): string[] => {
