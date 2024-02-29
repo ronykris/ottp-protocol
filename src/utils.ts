@@ -6,6 +6,7 @@ import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 import {AttestData} from './interface';
 import { Wallet, ethers } from 'ethers'
 import axios from 'axios'
+import * as yaml from 'js-yaml'
 
 const getHtmlElement = async(text: string) => {    
     try {
@@ -118,8 +119,9 @@ const getFidFromFname = async (fname: string): Promise<string> => {
     if (!fname) 
         throw new Error ('Fname cannot be empty')
     try {
-        const fData = JSON.parse(await axios.get(`https://fnames.farcaster.xyz/transfers/current?name=${fname}`))
-        return fData.transfers[0].id
+        const fData: any = yaml.load(await axios.get(`https://fnames.farcaster.xyz/transfers/current?name=${fname}`))
+        console.log(fData)
+        return fData?.transfer?.id
     } catch (err) {
         throw(err)
     }
