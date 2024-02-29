@@ -5,6 +5,8 @@ import * as fs from "fs";
 import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
 import AttestData from './interface';
 import { Wallet, ethers } from 'ethers'
+import axios from 'axios'
+import e from 'express';
 
 const getHtmlElement = async(text: string) => {    
     try {
@@ -56,7 +58,7 @@ const getHtmlElement = async(text: string) => {
     }  
 }
 
-export const toPng = async (text: string) => {
+const toPng = async (text: string) => {
     const fontPath = join(process.cwd(), 'Roboto-Regular.ttf')
     let fontData = fs.readFileSync(fontPath)
     const svg = await satori(
@@ -113,4 +115,44 @@ const onchainAttestation = async (attestObj: AttestData) => {
 
 }
 
-export default onchainAttestation
+const getFidFromFname = async (fname: string): Promise<string> => { 
+    if (!fname) 
+        throw new Error ('Fname cannot be empty')
+    try {
+        const fData = JSON.parse(await axios.get(`https://fnames.farcaster.xyz/transfers/current?name=${fname}`))
+        return fData.transfers[0].id
+    } catch (err) {
+        throw(err)
+    }
+    
+}
+
+const getFnamesFromFrame = (text: string): string[] => {
+    const usernamePattern = /@\w+/g            
+    const matches = text.match(usernamePattern)            
+    if (!matches) {
+        return [];
+    }
+    return matches.map(username => username.substring(1));
+}
+
+const getFids = async(text: string): Promise<string[]> => {
+    if (!text)
+        throw new Error ('Fnames cannot be empty')
+    try {
+        const fnames: string[] = getFnamesFromFrame(text)
+        let fidArray: string[] = []
+        for (let fname of fnames) {
+            fidArray.push(await getFidFromFname(fname))
+        }
+        console.log(fidArray)
+        return fidArray
+    } catch (err) {
+        throw(err)
+    }
+}
+    
+    
+
+
+export {toPng, onchainAttestation, getFids}

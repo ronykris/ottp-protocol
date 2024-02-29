@@ -8,4 +8,4 @@ interface AttestData {
     project?: string
 }
 
-export default AttestData
+export  {AttestData}
