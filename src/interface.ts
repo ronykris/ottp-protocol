@@ -1,4 +1,4 @@
-interface AttestData {
+/*interface AttestData {
     fromFID: string,
     toFID?: string[],
     message: string,
@@ -6,6 +6,10 @@ interface AttestData {
     toOTTPID?: string[],
     type?: string,    
     project?: string
-}
+}*/
 
+interface AttestData {
+    fromFID: string,
+    data: string
+}
 export  {AttestData}

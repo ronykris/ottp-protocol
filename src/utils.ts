@@ -2,7 +2,7 @@ import { join } from 'path'
 import satori  from 'satori'
 import sharp from 'sharp'
 import * as fs from "fs";
-import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk';
+import { EAS, SchemaEncoder, SchemaValue, TransactionSigner } from '@ethereum-attestation-service/eas-sdk';
 import {AttestData} from './interface';
 import { Wallet, ethers } from 'ethers'
 import axios from 'axios'
@@ -83,45 +83,57 @@ const toPng = async (text: string) => {
 }
 
 const onchainAttestation = async (attestObj: AttestData) => {
-    const easContractAddress = process.env.EASCONTRACTADDRESS as string
-    const schemaUID = process.env.SCHEMAUID as string
-    const eas = new EAS(easContractAddress!)
-    const provider = new ethers.JsonRpcProvider('https://sepolia.base.org')
-    const signer = new ethers.Wallet(process.env.PVTKEY as string, provider)
-    eas.connect(signer)
+    try {
+        const easContractAddress = process.env.EASCONTRACTADDRESS as string
+        const schemaUID = process.env.SCHEMAUID as string
+        const eas = new EAS(easContractAddress!)
+        const provider = new ethers.JsonRpcProvider('https://sepolia.base.org')    
+        const signer = new ethers.Wallet(process.env.PVTKEY as string, provider)
+        eas.connect(signer as unknown as TransactionSigner)
 
-    const schemaEncoder = new SchemaEncoder("string fromFID,string[] toFID,string message,string fromOTTPID,string[] toOTTPID,string type,string project");
-    const encodedData = schemaEncoder.encodeData([
-	    { name: "fromFID", value: attestObj.fromFID, type: "string" },
-	    { name: "toFID", value: attestObj.toFID!, type: "string[]" },
-	    { name: "message", value: attestObj.message, type: "string" },
-	    { name: "fromOTTPID", value: attestObj.fromOTTPID!, type: "string" },
-	    { name: "toOTTPID", value: attestObj.toOTTPID!, type: "string[]" },
-	    { name: "type", value: attestObj.type!, type: "string" },
-	    { name: "project", value: attestObj.project!, type: "string" }
-    ])
+        //const schemaEncoder = new SchemaEncoder("string fromFID,string[] toFID,string message,string fromOTTPID,string[] toOTTPID,string type,string project")
+        const schemaEncoder = new SchemaEncoder("string fromFID,string data")
+        console.log(attestObj)
+        
+        /*const encodedData = schemaEncoder.encodeData([
+	        { name: "fromFID", value: attestObj.fromFID, type: "string" },
+	        { name: "toFID", value: attestObj.toFID!, type: "string[]" },
+	        { name: "message", value: attestObj.message, type: "string" },
+	        { name: "fromOTTPID", value: '', type: "string" },
+	        { name: "toOTTPID", value: '', type: "string[]" },
+	        { name: "type", value: '', type: "string" },
+	        { name: "project", value: '', type: "string" }
+        ])*/
 
-    const tx = await eas.attest({
-        schema: schemaUID,
-        data: {
-            recipient: "0x0000000000000000000000000000000000000000",            
-            revocable: false, // Be aware that if your schema is not revocable, this MUST be false
-            data: encodedData,
-        },
-    });
-    const newAttestationUID = await tx.wait();
-    console.log("New attestation UID:", newAttestationUID)
-    return newAttestationUID
+        const encodedData = schemaEncoder.encodeData([
+	        { name: "fromFID", value: attestObj.fromFID, type: "string" },
+	        { name: "data", value: attestObj.data, type: "string" }	        
+        ])
 
+        const tx = await eas.attest({
+            schema: schemaUID,
+            data: {
+                recipient: "0x0000000000000000000000000000000000000000",            
+                revocable: true, // Be aware that if your schema is not revocable, this MUST be false
+                data: encodedData,
+            },
+        });
+        const newAttestationUID = await tx.wait();
+        console.log("New attestation UID:", newAttestationUID)
+        return newAttestationUID
+    } catch (err) {
+        console.log(err)
+    }
+    
 }
 
 const getFidFromFname = async (fname: string): Promise<string> => { 
     if (!fname) 
         throw new Error ('Fname cannot be empty')
     try {
-        const fData: any = yaml.load(await axios.get(`https://fnames.farcaster.xyz/transfers/current?name=${fname}`))
-        console.log(fData)
-        return fData?.transfer?.id
+        const response = await axios.get(`https://fnames.farcaster.xyz/transfers/current?name=${fname}`)
+        console.log(response.data)        
+        return response.data?.transfer?.id
     } catch (err) {
         throw(err)
     }
@@ -141,6 +153,7 @@ const getFids = async(text: string): Promise<string[]> => {
         throw new Error ('Fnames cannot be empty')
     try {
         const fnames: string[] = getFnamesFromFrame(text)
+        console.log(fnames)
         let fidArray: string[] = []
         for (let fname of fnames) {
             fidArray.push(await getFidFromFname(fname))
@@ -151,8 +164,5 @@ const getFids = async(text: string): Promise<string[]> => {
         throw(err)
     }
 }
-    
-    
-
 
 export {toPng, onchainAttestation, getFids}
