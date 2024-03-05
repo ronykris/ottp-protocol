@@ -48,7 +48,7 @@ app.post('/next', async(req, res) => {
     }
     const body: FrameRequest = await req.body
     let inputText: string = body.untrustedData.inputText
-    console.log(inputText)
+    //console.log(inputText)
     if(validateCollabUserInput(inputText)){
         collabUsers = inputText
         getFids(inputText)

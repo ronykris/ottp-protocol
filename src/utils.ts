@@ -4,9 +4,8 @@ import sharp from 'sharp'
 import * as fs from "fs";
 import { EAS, SchemaEncoder, SchemaValue, TransactionSigner } from '@ethereum-attestation-service/eas-sdk';
 import {AttestData} from './interface';
-import { Wallet, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import axios from 'axios'
-import * as yaml from 'js-yaml'
 
 const getHtmlElement = async(text: string) => {    
     try {
@@ -78,7 +77,7 @@ const toPng = async (text: string) => {
         .toFormat('png')
         .toBuffer();    
     const imageData = 'data:image/png;base64,'+ pngBuffer.toString('base64')
-    console.log(imageData)
+    //console.log(imageData)
     return imageData
 }
 
@@ -132,7 +131,7 @@ const getFidFromFname = async (fname: string): Promise<string> => {
         throw new Error ('Fname cannot be empty')
     try {
         const response = await axios.get(`https://fnames.farcaster.xyz/transfers/current?name=${fname}`)
-        console.log(response.data)        
+        //console.log(response.data)        
         return response.data?.transfer?.id
     } catch (err) {
         throw(err)
@@ -153,7 +152,7 @@ const getFids = async(text: string): Promise<string[]> => {
         throw new Error ('Fnames cannot be empty')
     try {
         const fnames: string[] = getTaggedData(text)
-        console.log(fnames)
+        //console.log(fnames)
         let fidArray: string[] = []
         if (!fnames){
             return fidArray
@@ -161,7 +160,7 @@ const getFids = async(text: string): Promise<string[]> => {
             for (let fname of fnames) {
                 fidArray.push(await getFidFromFname(fname))
             }
-            console.log(fidArray)
+            //console.log(fidArray)
             return fidArray
         }
     } catch (err) {
