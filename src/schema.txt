@@ -1,0 +1,10 @@
+{
+    fromFID: <fromFID>,
+    toFID?: <toFID>,
+    fromOTTPID?: <fromOTTPID>,
+    toOTTPID?: <toOTTPID>,
+    type?: <type>,
+    message: <message>,
+    project?: <project>,
+
+}

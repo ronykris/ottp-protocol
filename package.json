@@ -1,0 +1,39 @@
+{
+  "name": "ottp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p .",
+    "dev": "tsc -p . && nodemon src/server.ts",
+    "start": "tsc -p . && ts-node src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.17",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@coinbase/onchainkit": "^0.6.1",
+    "@ethereum-attestation-service/eas-sdk": "^1.5.0",
+    "@farcaster/hub-nodejs": "^0.11.0",
+    "axios": "^1.6.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.4",
+    "ethers": "^6.11.1",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.0",
+    "nodemon": "^3.0.3",
+    "satori": "^0.10.13",
+    "satori-html": "^0.3.2",
+    "sharp": "^0.33.2"
+  }
+}
