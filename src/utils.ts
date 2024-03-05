@@ -93,7 +93,7 @@ const onchainAttestation = async (attestObj: AttestData) => {
 
         //const schemaEncoder = new SchemaEncoder("string fromFID,string[] toFID,string message,string fromOTTPID,string[] toOTTPID,string type,string project")
         const schemaEncoder = new SchemaEncoder("string fromFID,string data")
-        console.log(attestObj)
+        //console.log(attestObj)
         
         /*const encodedData = schemaEncoder.encodeData([
 	        { name: "fromFID", value: attestObj.fromFID, type: "string" },
@@ -119,7 +119,7 @@ const onchainAttestation = async (attestObj: AttestData) => {
             },
         });
         const newAttestationUID = await tx.wait();
-        console.log("New attestation UID:", newAttestationUID)
+        //console.log("New attestation UID:", newAttestationUID)
         return newAttestationUID
     } catch (err) {
         console.log(err)
@@ -139,30 +139,44 @@ const getFidFromFname = async (fname: string): Promise<string> => {
     }
 }
 
-const getFnamesFromFrame = (text: string): string[] => {
-    const usernamePattern = /@\w+/g            
-    const matches = text.match(usernamePattern)            
+const getTaggedData = (text: string): string[] => {
+    const taggedDataPattern = /@\w+/g            
+    const matches = text.match(taggedDataPattern)            
     if (!matches) {
         return [];
     }
-    return matches.map(username => username.substring(1));
+    return matches.map(taggedData => taggedData.substring(1));
 }
 
 const getFids = async(text: string): Promise<string[]> => {
     if (!text)
         throw new Error ('Fnames cannot be empty')
     try {
-        const fnames: string[] = getFnamesFromFrame(text)
+        const fnames: string[] = getTaggedData(text)
         console.log(fnames)
         let fidArray: string[] = []
-        for (let fname of fnames) {
-            fidArray.push(await getFidFromFname(fname))
+        if (!fnames){
+            return fidArray
+        } else {
+            for (let fname of fnames) {
+                fidArray.push(await getFidFromFname(fname))
+            }
+            console.log(fidArray)
+            return fidArray
         }
-        console.log(fidArray)
-        return fidArray
     } catch (err) {
         throw(err)
     }
 }
 
-export {toPng, onchainAttestation, getFids}
+const validateCollabUserInput = (text: string): boolean => {
+    // Split the text into words based on spaces and punctuation.
+    const words = text.match(/\b\w+@\w*\b/g) || []    
+    return words.every(word => {
+        // Count '@' occurrences and ensure the word starts with '@'
+        const atCount = word.split('').filter(char => char === '@').length;
+        return word.startsWith('@') && atCount === 1;
+    });
+}
+
+export {toPng, onchainAttestation, getFids, validateCollabUserInput, getTaggedData}
