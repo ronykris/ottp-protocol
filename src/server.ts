@@ -1,10 +1,10 @@
-import { FrameInputMetadata, FrameRequest, getFrameHtmlResponse, getFrameMessage } from '@coinbase/onchainkit'
+import { FrameRequest, getFrameHtmlResponse } from '@coinbase/onchainkit'
 import express from 'express'
 import * as dotenv from 'dotenv'
 import cors from 'cors'
-import {toPng, onchainAttestation, getFids, validateCollabUserInput, getTaggedData}  from './utils'
+import {onchainAttestation, getFids, validateCollabUserInput, getTaggedData}  from './utils'
 import {AttestData } from './interface'
-import { frame1, frame2, frame3 } from './image'
+import { frame1, frame2, frame3 } from './images'
 
 dotenv.config()
 
@@ -14,9 +14,6 @@ app.use(cors())
 
 const port = process.env.PORT || 4001
 var fids: string[] = []
-var collabUsers: string = ''
-
-//console.log(`HOST : ${process.env.HOST}`)
 
 app.listen(port, () => {
     console.log('listening on port ' + port)
@@ -48,9 +45,8 @@ app.post('/next', async(req, res) => {
     }
     const body: FrameRequest = await req.body
     let inputText: string = body.untrustedData.inputText
-    //console.log(inputText)
+    
     if(validateCollabUserInput(inputText)){
-        collabUsers = inputText
         getFids(inputText)
             .then((frameFids) => fids = frameFids)
             .catch((error) => console.error(error))
@@ -97,17 +93,9 @@ app.post('/attest', async (req, res) => {
     }
     const body: FrameRequest = await req.body
     if (body.untrustedData.buttonIndex !== 1) {
-        let inputText: string = body.untrustedData.inputText
-        //console.log(inputText)
-        //console.log(fids)
+        let inputText: string = body.untrustedData.inputText        
         let project: string[] = getTaggedData(inputText)
-        //console.log('project: ' + project)
-    
-        /*let attestDataObj: AttestData = {
-            fromFID: body.untrustedData.fid as unknown as string,
-            toFID: fids,
-            message: body.untrustedData.inputText as unknown as string
-        }*/
+        
         let data: any = {}
         data.toFID = fids
         data.message = inputText
@@ -118,8 +106,7 @@ app.post('/attest', async (req, res) => {
             data: JSON.stringify(data)
         }
         const attestTxn = await onchainAttestation(attestDataObj)
-        //console.log(attestTxn)
-    
+            
         res.status(200).send(
             getFrameHtmlResponse({
                 buttons: [
@@ -138,8 +125,7 @@ app.post('/attest', async (req, res) => {
                         "action": "link",
                         "target": `https://base-sepolia.easscan.org/attestation/view/${attestTxn}`
                     }
-                ],
-                //image: await toPng(body.untrustedData.inputText),
+                ],                
                 image: frame3,
                 ogTitle: "OTTP: Shoutout!",            
             })
