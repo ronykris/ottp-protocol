@@ -74,13 +74,28 @@ const getFids = async(text: string): Promise<string[]> => {
 }
 
 const validateCollabUserInput = (text: string): boolean => {
-    // Split the text into words based on spaces and punctuation.
-    const words = text.match(/\b\w+@\w*\b/g) || []    
-    return words.every(word => {
-        // Count '@' occurrences and ensure the word starts with '@'
-        const atCount = word.split('').filter(char => char === '@').length;
-        return word.startsWith('@') && atCount === 1;
-    });
-}
+    // Identify segments starting with '@' and possibly followed by any characters
+    // except for spaces, punctuation, or special characters (excluding '@').
+    const segments = text.match(/@\w+/g) || [];
+
+    // Validate that the original text only contains the valid segments and separators.
+    // Rebuild what the valid text should look like from the segments.
+    const validText = segments.join(' '); // Using space as a generic separator for validation.
+
+    // Further process the text to remove all valid segments, leaving only separators.
+    // This step checks if there are any extra characters or segments that don't start with '@'.
+    const remainingText = text.replace(/@\w+/g, '').trim();
+
+    // Check if the remaining text contains only spaces, punctuation, or special characters (excluding '@').
+    // This can be adjusted based on the specific separators you expect between words.
+    const isValidSeparators = remainingText.length === 0 || /^[^@\w]+$/g.test(remainingText);
+
+    // Ensure every identified segment starts with '@' and contains no additional '@'.
+    const isValidSegments = segments.every(segment => segment.startsWith('@') && !segment.slice(1).includes('@'));
+
+    // The text is valid if the separators are valid, and all segments start with '@' without additional '@'.
+    return isValidSegments && isValidSeparators;
+};
+
 
 export {onchainAttestation, getFids, validateCollabUserInput, getTaggedData}
