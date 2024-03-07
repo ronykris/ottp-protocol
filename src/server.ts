@@ -195,3 +195,5 @@ app.get('/restart', (req, res) => {
         })    
     )
 })
+
+export { app }
